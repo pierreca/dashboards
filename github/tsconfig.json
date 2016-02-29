@@ -1,0 +1,14 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "outDir": "./lib",
+        "sourceMap": true,
+        "target": "es5",
+        "module": "commonjs"
+    },
+    "files": [
+        "./src/index.ts",
+        "./src/github_api.ts",
+        "./typings/tsd.d.ts"
+    ]
+}
