@@ -1,0 +1,17 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "outDir": "./lib",
+        "sourceMap": true,
+        "target": "es5",
+        "module": "commonjs"
+    },
+    "files": [
+        "./src/jenkins.ts",
+        "./src/server.ts",
+        "./src/job.ts",
+        "./src/build.ts",
+        "./src/buildresult.ts",
+        "./typings/tsd.d.ts"
+    ]
+}

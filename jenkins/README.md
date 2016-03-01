@@ -1,0 +1,2 @@
+Utility that crawls a Jenkins server using the open APIs to get build status and load them in a database.
+From there, statistics about the builds (failure rate, average build time...) can be extracted.
