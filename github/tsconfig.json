@@ -7,7 +7,8 @@
         "module": "commonjs"
     },
     "files": [
-        "./src/index.ts",
+        "./src/ghprompt.ts",
+        "./src/ghquery.ts",
         "./src/github_api.ts",
         "./typings/tsd.d.ts"
     ]

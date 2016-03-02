@@ -45,8 +45,6 @@ export class GHRepository {
                 options.auth = self.user + ':' + self.token;
             }
             
-            var issues = [];
-            
             var processResponse = function (response: any, resolve?: Function) {
                 var responseBody = '';
                 response.on('data', function (chunk) {
@@ -98,10 +96,10 @@ export class GHRepository {
     };
     
     
-    public count(type: IssueType, state: IssueState) : Promise<Number> ;
-    public count(type: IssueType, state: IssueState, operationType?:IssueTimeStamp, since?:Date) : Promise<Number> ;
+    public list(type: IssueType, state: IssueState) : Promise<Array<any>> ;
+    public list(type: IssueType, state: IssueState, operationType?:IssueTimeStamp, since?:Date) : Promise<any> ;
      
-    public count(type: IssueType, state: IssueState, operationType?:IssueTimeStamp, since?:Date) : Promise<number> {
+    public list(type: IssueType, state: IssueState, operationType?:IssueTimeStamp, since?:Date) : Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
             var query = undefined;
@@ -155,7 +153,7 @@ export class GHRepository {
                 results = self.issues.find(query);
             }
             
-            resolve(results.length);
+            resolve(results);
         });
     };
 }

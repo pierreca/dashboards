@@ -2,10 +2,10 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Launch",
+			"name": "ghquery",
 			"type": "node",
 			"request": "launch",
-			"program": "${workspaceRoot}/src/index.ts",
+			"program": "${workspaceRoot}/src/ghquery.ts",
 			"stopOnEntry": false,
 			"args": [],
 			"cwd": "${workspaceRoot}",
@@ -18,6 +18,25 @@
 			},
             "preLaunchTask": "tsc",
 			"externalConsole": false,
+			"sourceMaps": true,
+			"outDir": "${workspaceRoot}/lib"
+		},{
+			"name": "ghprompt",
+			"type": "node",
+			"request": "launch",
+			"program": "${workspaceRoot}/src/ghprompt.ts",
+			"stopOnEntry": false,
+			"args": [],
+			"cwd": "${workspaceRoot}",
+			"runtimeExecutable": null,
+			"runtimeArgs": [
+				"--nolazy"
+			],
+			"env": {
+				"NODE_ENV": "development"
+			},
+            "preLaunchTask": "tsc",
+			"externalConsole": true,
 			"sourceMaps": true,
 			"outDir": "${workspaceRoot}/lib"
 		}
