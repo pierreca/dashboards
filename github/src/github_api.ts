@@ -4,89 +4,7 @@ var debug = require('debug')('github_api');
 var url = require('url');
 var loki = require('lokijs');
 
-export enum IssueType {
-    Issue,
-    PullRequest,
-    All
-}
-
-export enum IssueState {
-    Open,
-    Closed,
-    All
-}
-
-export enum IssueActivity {
-    Created,
-    Updated,
-    Closed
-}
-
-export interface IssueFilter {
-    negated: boolean;
-    apply(issue: any):boolean;
-}
-
-export class IssueActivityFilter implements IssueFilter {
-    negated: boolean = false;
-    constructor (public activity: IssueActivity, public timestamp: Date) {};
-    
-    public apply = (issue: any):boolean => {
-        var ts = null;
-        switch(this.activity) {
-            case IssueActivity.Created:
-                ts = new Date(issue.created_at);
-                break;
-            case IssueActivity.Updated:
-                ts = new Date(issue.created_at);
-                break;
-            case IssueActivity.Closed:
-                ts = new Date(issue.created_at);
-                break;
-        }
-        var result = ts >= this.timestamp;
-        return this.negated ? !result : result;        
-    }
-}
-
-export class IssueAssigneeFilter implements IssueFilter {
-    negated: boolean = false;
-    constructor (public assignee: string) {};
-    
-    public apply = (issue: any):boolean => {
-        var result = false;
-        
-        if (this.assignee === null) {
-            result = !!issue.assignee;
-        } else if (issue.assignee) {
-            result = issue.assignee.login === this.assignee;
-        }
-        
-        return this.negated ? !result : result;
-    }
-}
-
-export class IssueLabelFilter implements IssueFilter {
-    negated: boolean = false;
-    constructor (public label: string) {};
-    
-    public apply = (issue: any):boolean => {
-        var result = false;
-        for (var i = 0; i < issue.labels.length; i++) {
-            if (issue.labels[i].name === this.label) {
-                result = true;
-                break;
-            }
-        }
-        return this.negated ? !result : result;
-    }
-}
-
-export class FilterCollection {
-    activity: IssueActivityFilter;
-    label: IssueLabelFilter;
-    assignee: IssueAssigneeFilter;
-}
+import types = require('./github_types');
 
 export class GHRepository {
     issues: any;
@@ -182,18 +100,18 @@ export class GHRepository {
     };
     
     
-    public list(type: IssueType, state: IssueState, filters?: FilterCollection) : Promise<any> {
+    public list(type: types.IssueType, state: types.IssueState, filters?: types.FilterCollection) : Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
             var query = undefined;
             var queries = [];
             
-            if (state !== IssueState.All) {
-                queries.push((state === IssueState.Open) ? { state : 'open' } : { state: 'closed' });    
+            if (state !== types.IssueState.All) {
+                queries.push((state === types.IssueState.Open) ? { state : 'open' } : { state: 'closed' });    
             }
             
-            if(type !== IssueType.All) {
-                queries.push((type === IssueType.Issue) ? { pull_request : undefined } : { pull_request: { '$ne': undefined } });
+            if(type !== types.IssueType.All) {
+                queries.push((type === types.IssueType.Issue) ? { pull_request : undefined } : { pull_request: { '$ne': undefined } });
             }
             
             if(queries.length === 1) {

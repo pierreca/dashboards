@@ -9,6 +9,7 @@
     "files": [
         "./src/ghprompt.ts",
         "./src/ghquery.ts",
+        "./src/github_types.ts",
         "./src/github_api.ts",
         "./typings/tsd.d.ts"
     ]

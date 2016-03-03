@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'user strict';
 
 var pr = require('prompt');
@@ -6,6 +7,7 @@ var packageJson = require('../package.json');
 var chalk = require('chalk');
 
 import GithubApi = require('./github_api');
+import types = require('./github_types');
 
 commander.version(packageJson.version)
     .usage('[options] <OWNER> <REPOSITORY>')
@@ -59,13 +61,18 @@ var usagecmd = function() {
 };
 
 var helpcmd = function(topic?: string) {
-    var helpMessage = chalk.red('Sorry... Unknown keyword...');
-    if (commands[topic] && commands[topic].help) {
-        helpMessage = commands[topic].help;
+    if (!topic) {
+        usagecmd();
+    } else {
+        var helpMessage = chalk.red('Sorry... Unknown keyword...');
+        
+        if (commands[topic] && commands[topic].help) {
+            helpMessage = commands[topic].help;
+        }
+        
+        console.log(chalk.bold(topic + ': ') +  helpMessage);
+        startPrompt();
     }
-    
-    console.log(chalk.bold(topic + ': ') +  helpMessage);
-    startPrompt();
 };
 
 var unknowncmd = function (cmd: string) {
@@ -110,12 +117,12 @@ var linkcmd = function (issueNumbers) {
 }
 
 var translateParams = function (params: Array<string>) {
-    var filterCollection: GithubApi.FilterCollection;
-    var issueType: GithubApi.IssueType = GithubApi.IssueType.All;
-    var issueState: GithubApi.IssueState = GithubApi.IssueState.All;
-    var issueActivity: GithubApi.IssueActivity = GithubApi.IssueActivity.Updated;
+    var filterCollection: types.FilterCollection;
+    var issueType: types.IssueType = types.IssueType.All;
+    var issueState: types.IssueState = types.IssueState.All;
+    var issueActivity: types.IssueActivity = types.IssueActivity.Updated;
     var negated = false;
-    var verifyNegation = function (filter: GithubApi.IssueFilter) {
+    var verifyNegation = function (filter: types.IssueFilter) {
         if (negated) {
             filter.negated = true;
         }
@@ -146,45 +153,45 @@ var translateParams = function (params: Array<string>) {
     while(params.length > 0) {
         switch(params[0]) {
             case 'open':
-                issueState = GithubApi.IssueState.Open;
+                issueState = types.IssueState.Open;
                 break;
             case 'close':
             case 'closed':
-                if (issueState === GithubApi.IssueState.All) {
-                    issueState = GithubApi.IssueState.Closed;
+                if (issueState === types.IssueState.All) {
+                    issueState = types.IssueState.Closed;
                 }
                 
-                if (issueActivity === GithubApi.IssueActivity.Updated) {
-                    issueActivity = GithubApi.IssueActivity.Closed;
+                if (issueActivity === types.IssueActivity.Updated) {
+                    issueActivity = types.IssueActivity.Closed;
                 }
                 
                 break;
             case 'issues': 
-                issueType = GithubApi.IssueType.Issue;
+                issueType = types.IssueType.Issue;
                 break;
             case 'pull':
             case 'prs': 
-                issueType = GithubApi.IssueType.PullRequest;
+                issueType = types.IssueType.PullRequest;
                 break;
             case 'opened':
             case 'openned':
             case 'created':
-                issueActivity = GithubApi.IssueActivity.Created;
+                issueActivity = types.IssueActivity.Created;
                 break;
             case 'assign':
             case 'assigned':
                 if (!filterCollection) {
-                    filterCollection = new GithubApi.FilterCollection();
+                    filterCollection = new types.FilterCollection();
                 }
                 
                 if (params[1] === 'to') {
                     if (params[2] === 'me') {
                         params[2] = commander.user;
                     }
-                    filterCollection.assignee = new GithubApi.IssueAssigneeFilter(params[2]);
+                    filterCollection.assignee = new types.IssueAssigneeFilter(params[2]);
                     params.splice(1, 2);
                 } else {
-                    filterCollection.assignee = new GithubApi.IssueAssigneeFilter(null);
+                    filterCollection.assignee = new types.IssueAssigneeFilter(null);
                     params.splice(1, 1);
                 }
                 verifyNegation(filterCollection.assignee);
@@ -194,9 +201,9 @@ var translateParams = function (params: Array<string>) {
             case 'labeled':
             case 'labelled':
                 if (!filterCollection) {
-                    filterCollection = new GithubApi.FilterCollection();
+                    filterCollection = new types.FilterCollection();
                 }
-                filterCollection.label = new GithubApi.IssueLabelFilter(params[1]);
+                filterCollection.label = new types.IssueLabelFilter(params[1]);
                 verifyNegation(filterCollection.label);    
                 
                 params.splice(1, 1);
@@ -228,9 +235,9 @@ var translateParams = function (params: Array<string>) {
                 }
                 
                 var relevantTimeStamp = new Date(Date.now() - (multiplier * durationUnit));
-                var activityFilter = new GithubApi.IssueActivityFilter(issueActivity, relevantTimeStamp);
+                var activityFilter = new types.IssueActivityFilter(issueActivity, relevantTimeStamp);
                 if(!filterCollection) {
-                    filterCollection = new GithubApi.FilterCollection();
+                    filterCollection = new types.FilterCollection();
                 }
                 
                 filterCollection.activity = activityFilter
@@ -288,7 +295,7 @@ var listcmd = function(params: Array<string>) {
 
 
 var commands = [];
-commands['usage'] = { help: 'Displays available commands', execute: usagecmd };
+commands['usage'] = { help: 'Displays help about a command passed as a parameter', execute: helpcmd };
 commands['help'] = { help: 'Displays help about a command passed as a parameter', execute: helpcmd };
 commands['exit'] = { help: 'Exits ghprompt', execute: exitcmd };
 commands['load'] = { help: 'Load all issues of the repository', execute: loadcmd };

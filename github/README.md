@@ -4,8 +4,9 @@ Quick and dirty implementation of two small command-line utilities that query Gi
 - `ghquery` just demonstrate how to use the Github API module to query for various statistics in case you want to write your own script
 
 ## Install
-I have not published npm packages yet. Please don't do it for me. in the meantime just clone the repository, compile the typscript using tsc and the tsconfig.json file, npm install and use it from there.
-If you don't know how to do this, it's probably too early for you to try to use this tool. I'll make a nice installer and update the README later.
+> npm install -g gh-issues-cli
+
+This will install utilties ghprompt and ghquery.
 
 ## Usage
 
@@ -68,8 +69,8 @@ This repository is structure to be really easy to use with Visual Studio Code, s
 - [ ] Issue type (issue or PR) and state (open/closed) are currently treated differently from other filtering mechanisms. unify this.
 - [ ] Write tests
 - [ ] Better docs
-- [ ] Better decoupling of the parsing
-- [ ] Better Github API file structure
+- [ ] Better decoupling of the command parser
+- [x] Better Github API file structure
 - [ ] Find a way to not grow the call stack when looping between commands
 - [ ] Turn all commands into promises?
 - [ ] Custom issue interface from github json object (for type-safety and stuff)
@@ -83,3 +84,4 @@ This repository is structure to be really easy to use with Visual Studio Code, s
 - [ ] Add an option to specify a query directly from the command line
 - [ ] Index the database
 - [ ] Figure out a way to make multiple-word labels work (probably by dynamically creating a collection of labels from the Github JSON)
+- [ ] Detailed view of an issue (with timestamps etc)

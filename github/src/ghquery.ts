@@ -1,8 +1,11 @@
+#!/usr/bin/env node
+
 var commander = require('commander');
 var chalk = require('chalk');
 var packageJson = require('../package.json');
 
 import GithubApi = require('./github_api');
+import types = require('./github_types');
 
 commander.version(packageJson.version)
          .usage('[options] <OWNER> <REPOSITORY>')
@@ -30,39 +33,39 @@ if (user && token) {
 var last24Hours = new Date(Date.now() - 86400000);
 var last7days = new Date(Date.now() - 604800000);
 
-var createActivityFilter = function(issueActivity: GithubApi.IssueActivity, timestamp: Date) {
-    var filterCollection = new GithubApi.FilterCollection();
-    filterCollection.activity = new GithubApi.IssueActivityFilter(issueActivity, timestamp);
+var createActivityFilter = function(issueActivity: types.IssueActivity, timestamp: Date) {
+    var filterCollection = new types.FilterCollection();
+    filterCollection.activity = new types.IssueActivityFilter(issueActivity, timestamp);
     
     return filterCollection;
 };
 
-var createdLastWeek = createActivityFilter(GithubApi.IssueActivity.Created, last7days);
-var updatedLastWeek = createActivityFilter(GithubApi.IssueActivity.Updated, last7days);
-var closedLastWeek = createActivityFilter(GithubApi.IssueActivity.Closed, last7days);
+var createdLastWeek = createActivityFilter(types.IssueActivity.Created, last7days);
+var updatedLastWeek = createActivityFilter(types.IssueActivity.Updated, last7days);
+var closedLastWeek = createActivityFilter(types.IssueActivity.Closed, last7days);
 
-var createdLastDay = createActivityFilter(GithubApi.IssueActivity.Created, last24Hours);
-var updatedLastDay = createActivityFilter(GithubApi.IssueActivity.Updated, last24Hours);
-var closedLastDay = createActivityFilter(GithubApi.IssueActivity.Closed, last24Hours);
+var createdLastDay = createActivityFilter(types.IssueActivity.Created, last24Hours);
+var updatedLastDay = createActivityFilter(types.IssueActivity.Updated, last24Hours);
+var closedLastDay = createActivityFilter(types.IssueActivity.Closed, last24Hours);
 
 repo.loadAllIssues().then(() => {
     return Promise.all([
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Open),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Closed),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Open),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Closed),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.All, createdLastWeek),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Open, updatedLastWeek),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Closed, closedLastWeek),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.All, createdLastWeek),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Open, updatedLastWeek),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Closed, closedLastWeek),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.All, createdLastDay),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Open, updatedLastDay),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Closed, closedLastDay),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.All, createdLastDay),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Open, updatedLastDay),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Closed, closedLastDay)
+        repo.list(types.IssueType.Issue, types.IssueState.Open),
+        repo.list(types.IssueType.Issue, types.IssueState.Closed),
+        repo.list(types.IssueType.PullRequest, types.IssueState.Open),
+        repo.list(types.IssueType.PullRequest, types.IssueState.Closed),
+        repo.list(types.IssueType.Issue, types.IssueState.All, createdLastWeek),
+        repo.list(types.IssueType.Issue, types.IssueState.Open, updatedLastWeek),
+        repo.list(types.IssueType.Issue, types.IssueState.Closed, closedLastWeek),
+        repo.list(types.IssueType.PullRequest, types.IssueState.All, createdLastWeek),
+        repo.list(types.IssueType.PullRequest, types.IssueState.Open, updatedLastWeek),
+        repo.list(types.IssueType.PullRequest, types.IssueState.Closed, closedLastWeek),
+        repo.list(types.IssueType.Issue, types.IssueState.All, createdLastDay),
+        repo.list(types.IssueType.Issue, types.IssueState.Open, updatedLastDay),
+        repo.list(types.IssueType.Issue, types.IssueState.Closed, closedLastDay),
+        repo.list(types.IssueType.PullRequest, types.IssueState.All, createdLastDay),
+        repo.list(types.IssueType.PullRequest, types.IssueState.Open, updatedLastDay),
+        repo.list(types.IssueType.PullRequest, types.IssueState.Closed, closedLastDay)
     ]);
 }).then(function(issuesList){
     console.log(chalk.bold('--- Totals ---'));

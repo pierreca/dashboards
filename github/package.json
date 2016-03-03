@@ -1,8 +1,7 @@
 {
-  "name": "gh-dashboard",
-  "version": "0.0.1",
-  "description": "Github repository dashboard",
-  "main": "index.js",
+  "name": "gh-issues-cli",
+  "version": "0.0.2",
+  "description": "Github repository command-line interface",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,7 +12,9 @@
   "keywords": [
     "github",
     "dashboard",
-    "repository"
+    "repository",
+    "cli",
+    "issues"
   ],
   "author": "Pierre Cauchois",
   "license": "MIT",
