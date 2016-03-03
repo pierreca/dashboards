@@ -3,6 +3,7 @@
 var pr = require('prompt');
 var commander = require('commander');
 var packageJson = require('../package.json');
+var chalk = require('chalk');
 
 import GithubApi = require('./github_api');
 
@@ -34,9 +35,10 @@ var startPrompt = function() {
     pr.delimiter = '>';
 
     pr.get('command', (err, result) => {
+        result.command = result.command.trim();
         var splitcmd = result.command.split(' ');
         if (splitcmd.length > 1) {
-            result.command = splitcmd[0];
+            result.command = splitcmd[0].trim();
             result.params = splitcmd.slice(1);
         }
         
@@ -62,7 +64,7 @@ var helpcmd = function(topic?: String) {
 };
 
 var unknowncmd = function (cmd: String) {
-    console.log('Unknown command: ' + cmd);
+    console.log(chalk.red('Unknown command: ' + chalk.bold(cmd)));
     startPrompt();
 };
 
@@ -76,47 +78,209 @@ var loadcmd = function() {
     repo.loadAllIssues().then(() => startPrompt());
 };
 
-var countcmd = function(params: Array<String>) {
-    var issueType: GithubApi.IssueType;
-    var issueState: GithubApi.IssueState;
-    
-    switch(params[0]) {
-        case 'open':
-            issueState = GithubApi.IssueState.Open;
-            break;
-        case 'closed':
-            issueState = GithubApi.IssueState.Closed;
-            break;
-        case 'all':
-            issueState = GithubApi.IssueState.All;
-            break;
-        default: 
-            console.log('Unknown issue state');
-            startPrompt();
-            break;
+var linkcmd = function (issueNumbers) {
+    for (var i = 0; i < issueNumbers.length; i++) {
+        issueNumbers[i] = parseInt(issueNumbers[i]);
+        if(isNaN(issueNumbers[i])) {
+            issueNumbers.splice(i, 1);
+            i--;
+        }
     }
     
-    switch(params[1]) {
-        case 'issues': 
-            issueType = GithubApi.IssueType.Issue;
-            break;
-        case 'prs': 
-            issueType = GithubApi.IssueType.PullRequest;
-            break;
-        case 'all': 
-            issueType = GithubApi.IssueType.All;
-            break;
-        default: 
-            console.log('Unknown issue type');
+    if (issueNumbers.length > 0) {
+        repo.get(issueNumbers).then(issues => {
+            for (var i = 0; i < issues.length; i++) {
+                console.log('[' + issues[i].number + '] ' + issues[i].title);
+                console.log(chalk.bold(issues[i].url));
+            }
             startPrompt();
-            break;
+        }).catch(err => {
+            console.log(chalk.red(err.message));
+            startPrompt();
+        });
+    } else {
+        console.log(chalk.red('No valid issue/pr number'));
+        startPrompt();
+    }
+}
+
+var translateParams = function (params: Array<string>) {
+    var filterCollection: GithubApi.FilterCollection;
+    var issueType: GithubApi.IssueType = GithubApi.IssueType.All;
+    var issueState: GithubApi.IssueState = GithubApi.IssueState.All;
+    var issueActivity: GithubApi.IssueActivity = GithubApi.IssueActivity.Updated;
+    var negated = false;
+    var verifyNegation = function (filter: GithubApi.IssueFilter) {
+        if (negated) {
+            filter.negated = true;
+        }
+        
+        negated = false;
     }
     
-    repo.list(issueType, issueState).then(issues => {
-        console.log(params[0] + ' ' + params[1] + ': ' + issues.length);
+    var i = 0;
+    while(i < params.length) {
+        params[i] = params[i].trim();
+        if (params[i] === '' || 
+            params[i] === 'in' || 
+            params[i] === 'the' || 
+            params[i] === 'all' ||
+            params[i] === 'that' ||
+            params[i] === 'are' ||
+            params[i] === 'were' ||
+            params[i] === 'update' ||
+            params[i] === 'updated' ||
+            params[i] === 'request' ||
+            params[i] === 'requests') {
+            params.splice(i, 1);
+        } else {
+            i++;
+        }
+    }
+    
+    while(params.length > 0) {
+        switch(params[0]) {
+            case 'open':
+            case 'opened':
+            case 'openned':
+                issueState = GithubApi.IssueState.Open;
+                break;
+            case 'close':
+            case 'closed':
+                if (issueState === GithubApi.IssueState.All) {
+                    issueState = GithubApi.IssueState.Closed;
+                }
+                
+                if (issueActivity === GithubApi.IssueActivity.Updated) {
+                    issueActivity = GithubApi.IssueActivity.Closed;
+                }
+                
+                break;
+            case 'issues': 
+                issueType = GithubApi.IssueType.Issue;
+                break;
+            case 'pull':
+            case 'prs': 
+                issueType = GithubApi.IssueType.PullRequest;
+                break;
+            case 'created':
+                issueActivity = GithubApi.IssueActivity.Created;
+                break;
+            case 'assign':
+            case 'assigned':
+                if (!filterCollection) {
+                    filterCollection = new GithubApi.FilterCollection();
+                }
+                
+                if (params[1] === 'to') {
+                    if (params[2] === 'me') {
+                        params[2] = commander.user;
+                    }
+                    filterCollection.assignee = new GithubApi.IssueAssigneeFilter(params[2]);
+                    params.splice(1, 2);
+                } else {
+                    filterCollection.assignee = new GithubApi.IssueAssigneeFilter(null);
+                    params.splice(1, 1);
+                }
+                verifyNegation(filterCollection.assignee);
+                
+                break;
+            case 'label':
+            case 'labeled':
+            case 'labelled':
+                if (!filterCollection) {
+                    filterCollection = new GithubApi.FilterCollection();
+                }
+                filterCollection.label = new GithubApi.IssueLabelFilter(params[1]);
+                verifyNegation(filterCollection.label);    
+                
+                params.splice(1, 1);
+                break;
+            case 'last':
+            case 'past':
+                var multiplier = parseInt(params[1]);
+                if (isNaN(multiplier)) {
+                    console.log(chalk.red('invalid duration multiplier: ' + chalk.bold(params[1])));
+                    startPrompt();
+                    return;
+                }
+                
+                var durationUnit: number;
+                switch (params[2]) {
+                    case 'hours':
+                        durationUnit = 3600000;
+                        break;
+                    case 'days':
+                        durationUnit = 86400000;
+                        break;
+                    case 'weeks':
+                        durationUnit = 604800000;
+                        break;
+                    default:
+                        console.log(chalk.red('Unknown duration keyword: ' + chalk.bold(params[2])));
+                        startPrompt();
+                        return;
+                }
+                
+                var relevantTimeStamp = new Date(Date.now() - (multiplier * durationUnit));
+                var activityFilter = new GithubApi.IssueActivityFilter(issueActivity, relevantTimeStamp);
+                if(!filterCollection) {
+                    filterCollection = new GithubApi.FilterCollection();
+                }
+                
+                filterCollection.activity = activityFilter
+                verifyNegation(filterCollection.activity);
+                
+                params.splice(1, 2);
+                
+                break;
+            case 'not': 
+                negated = true;
+                break;
+            default: 
+                console.log('Unknown criteria: ', params[0]);
+                startPrompt();
+                return;
+        }
+        
+        params.splice(0, 1);
+    }
+    
+    
+    return {
+        type: issueType,
+        state: issueState,
+        filters: filterCollection
+    }
+}
+
+var countcmd = function(params: Array<string>) {
+    var query = translateParams(params);
+    repo.list(query.type, query.state, query.filters).then(issues => {
+        console.log(issues.length);
         startPrompt();
     });
 };
+
+var listcmd = function(params: Array<string>) {
+    var query = translateParams(params);
+    repo.list(query.type, query.state, query.filters).then(issues => {
+        for (var i = 0; i < issues.length; i++) {
+            var assignee = issues[i].assignee ? issues[i].assignee.login : chalk.bold(chalk.red('no-one'));
+            var stateColor = chalk.white;
+            if (issues[i].state === 'open') {
+                stateColor = chalk.green;
+            } else if (issues[i].state === 'closed') {
+                stateColor = chalk.red;
+            }
+        
+            console.log(stateColor('[' + issues[i].number + '] ')  + issues[i].title + ' [' + assignee + '] ');
+        }
+        
+        startPrompt();
+    });
+};
+
 
 var commands = [];
 commands['usage'] = { help: 'Displays available commands', execute: usagecmd };
@@ -124,5 +288,9 @@ commands['help'] = { help: 'Displays help about a command passed as a parameter'
 commands['exit'] = { help: 'Exits ghprompt', execute: exitcmd };
 commands['load'] = { help: 'Load all issues of the repository', execute: loadcmd };
 commands['count'] = { help: 'Count issues with the specific criteria', execute: countcmd };
+commands['list'] = { help: 'List issues with the specific criteria', execute: listcmd };
+commands['link'] = { help: 'Get the link for a specific issue or PR', execute: linkcmd };
+commands['url'] = { help: 'Get the link for a specific issue or PR', execute: linkcmd };
+commands['get'] = { help: 'Get the link for a specific issue or PR', execute: linkcmd };
 
 startPrompt();

@@ -16,10 +16,76 @@ export enum IssueState {
     All
 }
 
-export enum IssueTimeStamp {
+export enum IssueActivity {
     Created,
     Updated,
     Closed
+}
+
+export interface IssueFilter {
+    negated: boolean;
+    apply(issue: any):boolean;
+}
+
+export class IssueActivityFilter implements IssueFilter {
+    negated: boolean = false;
+    constructor (public activity: IssueActivity, public timestamp: Date) {};
+    
+    public apply = (issue: any):boolean => {
+        var ts = null;
+        switch(this.activity) {
+            case IssueActivity.Created:
+                ts = new Date(issue.created_at);
+                break;
+            case IssueActivity.Updated:
+                ts = new Date(issue.created_at);
+                break;
+            case IssueActivity.Closed:
+                ts = new Date(issue.created_at);
+                break;
+        }
+        var result = ts >= this.timestamp;
+        return this.negated ? !result : result;        
+    }
+}
+
+export class IssueAssigneeFilter implements IssueFilter {
+    negated: boolean = false;
+    constructor (public assignee: string) {};
+    
+    public apply = (issue: any):boolean => {
+        var result = false;
+        
+        if (this.assignee === null) {
+            result = !!issue.assignee;
+        } else if (issue.assignee) {
+            result = issue.assignee.login === this.assignee;
+        }
+        
+        return this.negated ? !result : result;
+    }
+}
+
+export class IssueLabelFilter implements IssueFilter {
+    negated: boolean = false;
+    constructor (public label: string) {};
+    
+    public apply = (issue: any):boolean => {
+        var result = false;
+        for (var i = 0; i < issue.labels.length; i++) {
+            if (issue.labels[i].name === this.label) {
+                result = true;
+                break;
+            }
+        }
+        return this.negated ? !result : result;
+    }
+}
+
+export class FilterCollection {
+    activity: IssueActivityFilter;
+    label: IssueLabelFilter;
+    assignee: IssueAssigneeFilter;
 }
 
 export class GHRepository {
@@ -27,6 +93,26 @@ export class GHRepository {
     constructor (private owner:string, private name: string, private user?:string, private token?:string) {
         var repoDB = new loki('issues.json');
         this.issues = repoDB.addCollection('issues');
+    }
+    
+    public get(ids : Array<number>) : Promise<Array<any>> {
+        var self = this;
+        return new Promise(function(resolve, reject) {
+            var results = [];            
+            for (var i = 0; i < ids.length; i++) {
+                var issue = self.issues.findOne({ number: ids[i]});
+                if (issue) {
+                    results.push(issue);
+                } else {
+                    reject(new Error('Unknown issue/pr number'));
+                }
+            }
+            if (results.length > 0) {
+                resolve(results);
+            } else {
+                reject (new Error('no issues found.'));
+            }
+        });
     }
     
     public loadAllIssues() : Promise<Array<any>>{
@@ -96,23 +182,11 @@ export class GHRepository {
     };
     
     
-    public list(type: IssueType, state: IssueState) : Promise<Array<any>> ;
-    public list(type: IssueType, state: IssueState, operationType?:IssueTimeStamp, since?:Date) : Promise<any> ;
-     
-    public list(type: IssueType, state: IssueState, operationType?:IssueTimeStamp, since?:Date) : Promise<any> {
+    public list(type: IssueType, state: IssueState, filters?: FilterCollection) : Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
             var query = undefined;
             var queries = [];
-            
-            var nullOrUndefined = function (param) {
-                return param === undefined || param === null;
-            }
-            
-            if((nullOrUndefined(operationType) && !nullOrUndefined(since)) || 
-               (!nullOrUndefined(operationType) && nullOrUndefined(since))) {
-                reject(new Error('Invalid Parameters: either both or none of operationType and since must be specified'));
-            }
             
             if (state !== IssueState.All) {
                 queries.push((state === IssueState.Open) ? { state : 'open' } : { state: 'closed' });    
@@ -129,26 +203,16 @@ export class GHRepository {
             }
             
             var results;
-            
-            if(!nullOrUndefined(operationType)) {
-                var relevantTimeStamp = function(issue) {
-                    var ts = null;
-                    switch(operationType) {
-                        case IssueTimeStamp.Created:
-                            ts = new Date(issue.created_at);
-                            break;
-                        case IssueTimeStamp.Updated:
-                            ts = new Date(issue.created_at);
-                            break;
-                        case IssueTimeStamp.Closed:
-                            ts = new Date(issue.created_at);
-                            break;
-                    }
+            if(filters) {
+                results = self.issues.chain().find(query).where(issue => {
+                    var result = undefined;
                     
-                    return ts;
-                };
-                
-                results = self.issues.chain().find(query).where((issue) => relevantTimeStamp(issue) >= since).data();
+                    if (filters.activity) result = filters.activity.apply(issue);
+                    if (filters.label) result = result === undefined ? filters.label.apply(issue) : result && filters.label.apply(issue);
+                    if (filters.assignee) result = result === undefined ? filters.assignee.apply(issue) : result && filters.assignee.apply(issue);
+                    
+                    return result;
+                }).data();
             } else {
                 results = self.issues.find(query);
             }

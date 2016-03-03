@@ -30,24 +30,39 @@ if (user && token) {
 var last24Hours = new Date(Date.now() - 86400000);
 var last7days = new Date(Date.now() - 604800000);
 
+var createActivityFilter = function(issueActivity: GithubApi.IssueActivity, timestamp: Date) {
+    var filterCollection = new GithubApi.FilterCollection();
+    filterCollection.activity = new GithubApi.IssueActivityFilter(issueActivity, timestamp);
+    
+    return filterCollection;
+};
+
+var createdLastWeek = createActivityFilter(GithubApi.IssueActivity.Created, last7days);
+var updatedLastWeek = createActivityFilter(GithubApi.IssueActivity.Updated, last7days);
+var closedLastWeek = createActivityFilter(GithubApi.IssueActivity.Closed, last7days);
+
+var createdLastDay = createActivityFilter(GithubApi.IssueActivity.Created, last24Hours);
+var updatedLastDay = createActivityFilter(GithubApi.IssueActivity.Updated, last24Hours);
+var closedLastDay = createActivityFilter(GithubApi.IssueActivity.Closed, last24Hours);
+
 repo.loadAllIssues().then(() => {
     return Promise.all([
         repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Open),
         repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Closed),
         repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Open),
         repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Closed),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.All, GithubApi.IssueTimeStamp.Created, last7days),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Open, GithubApi.IssueTimeStamp.Updated, last7days),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Closed, GithubApi.IssueTimeStamp.Closed, last7days),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.All, GithubApi.IssueTimeStamp.Created, last7days),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Open, GithubApi.IssueTimeStamp.Updated, last7days),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Closed, GithubApi.IssueTimeStamp.Closed, last7days),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.All, GithubApi.IssueTimeStamp.Created, last24Hours),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Open, GithubApi.IssueTimeStamp.Updated, last24Hours),
-        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Closed, GithubApi.IssueTimeStamp.Closed, last24Hours),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.All, GithubApi.IssueTimeStamp.Created, last24Hours),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Open, GithubApi.IssueTimeStamp.Updated, last24Hours),
-        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Closed, GithubApi.IssueTimeStamp.Closed, last24Hours)
+        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.All, createdLastWeek),
+        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Open, updatedLastWeek),
+        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Closed, closedLastWeek),
+        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.All, createdLastWeek),
+        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Open, updatedLastWeek),
+        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Closed, closedLastWeek),
+        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.All, createdLastDay),
+        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Open, updatedLastDay),
+        repo.list(GithubApi.IssueType.Issue, GithubApi.IssueState.Closed, closedLastDay),
+        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.All, createdLastDay),
+        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Open, updatedLastDay),
+        repo.list(GithubApi.IssueType.PullRequest, GithubApi.IssueState.Closed, closedLastDay)
     ]);
 }).then(function(issuesList){
     console.log(chalk.bold('--- Totals ---'));
