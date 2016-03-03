@@ -58,12 +58,17 @@ var usagecmd = function() {
     startPrompt();
 };
 
-var helpcmd = function(topic?: String) {
-    console.log('Help about ' + topic);
+var helpcmd = function(topic?: string) {
+    var helpMessage = chalk.red('Sorry... Unknown keyword...');
+    if (commands[topic] && commands[topic].help) {
+        helpMessage = commands[topic].help;
+    }
+    
+    console.log(chalk.bold(topic + ': ') +  helpMessage);
     startPrompt();
 };
 
-var unknowncmd = function (cmd: String) {
+var unknowncmd = function (cmd: string) {
     console.log(chalk.red('Unknown command: ' + chalk.bold(cmd)));
     startPrompt();
 };
@@ -141,8 +146,6 @@ var translateParams = function (params: Array<string>) {
     while(params.length > 0) {
         switch(params[0]) {
             case 'open':
-            case 'opened':
-            case 'openned':
                 issueState = GithubApi.IssueState.Open;
                 break;
             case 'close':
@@ -163,6 +166,8 @@ var translateParams = function (params: Array<string>) {
             case 'prs': 
                 issueType = GithubApi.IssueType.PullRequest;
                 break;
+            case 'opened':
+            case 'openned':
             case 'created':
                 issueActivity = GithubApi.IssueActivity.Created;
                 break;

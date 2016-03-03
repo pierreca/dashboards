@@ -1,19 +1,85 @@
-Quick and dirty implementation of a small command-line utility that queries Github for Issues and PRs information.
+Quick and dirty implementation of two small command-line utilities that query Github for Issues and PRs information.
+
+- `ghprompt` is an interactive command line interface that can be used to query github for issues and pull-requests information in an almost natural language
+- `ghquery` just demonstrate how to use the Github API module to query for various statistics in case you want to write your own script
+
+## Install
+I have not published npm packages yet. Please don't do it for me. in the meantime just clone the repository, compile the typscript using tsc and the tsconfig.json file, npm install and use it from there.
+If you don't know how to do this, it's probably too early for you to try to use this tool. I'll make a nice installer and update the README later.
 
 ## Usage
-After cloning and compiling: 
 
-`node lib/index.js <owner> <repository> [username] [token]`
+Both `ghprompt` and `ghquery` take the same parameters:
+- `--user <github username>` (optional) Username to send when authenticating with github to raise API call rate limits.
+- `--password <github security token>` (optional) Security token (or password) to send when authenticating with github to raise API call rate limits.
+- `<owner>` (mandatory) name of the repository owner. 
+- `<repository>` (mandatory) repository for which you want to get numbers.
+
+**Why authenticate?**
+Github limits the number of unauthenticated calls that can be made to its API to 60 per hour. That limit might be maxed out quickly if you're using these utilities intensively. 
+In that case, authenticating raise the limit to 5000 calls per hour (which should be more than enough).
+
+### ghprompt
+The basic idea is to allow a user to query for issues and pull requests statistics. queries can be written in almost natural language, although it doesn't pretend like it's a chat bot.
+It's actually not even intelligent. it just recognizes keywords. A few commands:
+- **usage** will show usage examples
+- **help <keyword>** will show help about a specific command or keyword
+- **load** will load issues and pull requests from the repository and into a database for later querying. If you don't load, you can't query. Mandatory first step.
+- **list** will list stuff
+- **count** will count stuff
+- **link <number>** will show the link to take you to the github page of the issue/pull-request
+
+And now a few examples of queries:
+
+`> count open issues assigned to pierreca`
+
+`> list closed issues created in the last 7 days`
+
+`> list issues not assigned`
+
+`> count closed issues labeled bug in the past 4 weeks`
+
+`> list open issues not updated in the last 24 hours`
+
+### ghquery
+Run ghquery with the aforementionned parameters and it will spit out stats about open and closed issues and pull requests in the past 24 hours, 7 days, and overall. Not much here. it's intended more as a sample code.
 
 ## Features
 Current search criteria supported:
 - type (issue or pull request)
-- state (open, close)
+- current state (open, closed)
 - time and type of last update (created, updated, closed)
+- assignee
+- labels
 
-## Notes and limitations
-This utility starts by recursively downloading all issues descriptions. At most only 100 issues can be downloaded in an API call, 
-which means that projects with a lot of issues and PRs will rapidly max-out the API calls rate limits (unauthenticated is 60 calls per hour).
+## Developer notes
+This repository is structure to be really easy to use with Visual Studio Code, since it provides a great Typescript developer experience.
 
-If you want to get 5000 calls per hour, you have to authenticate with the API. Currently this utility supports basic authentication only
-which means username and security token or password.
+> **Why did you use typescript?**
+
+> Because I wanted to learn. Obviously, I'm not there yet.
+
+> **OMG the code sucks!**
+
+> Yeah. makes me sad too. Any kind of feedback will be taken seriously, pull-requests will be studied with care.
+
+## TODOs
+### Housekeeping
+[ ] Issue type (issue or PR) and state (open/closed) are currently treated differently from other filtering mechanisms. unify this.
+[ ] Write tests
+[ ] Better docs
+[ ] Better decoupling of the parsing
+[ ] Better Github API file structure
+[ ] Find a way to not grow the call stack when looping between commands
+[ ] Turn all commands into promises?
+[ ] Custom issue interface from github json object (for type-safety and stuff)
+
+### Features
+[ ] Save and load configuration from a file
+[ ] Save and load database to a file
+[ ] Differential queries to update the database
+[ ] Show and handle Github API calls rate limits
+[ ] Save query results to a file
+[ ] Add an option to specify a query directly from the command line
+[ ] Index the database
+[ ] Figure out a way to make multiple-word labels work (probably by dynamically creating a collection of labels from the Github JSON)
