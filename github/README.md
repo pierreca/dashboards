@@ -42,7 +42,7 @@ And now a few examples of queries:
 `> list open issues not updated in the last 24 hours`
 
 ### ghquery
-Run ghquery with the aforementionned parameters and it will spit out stats about open and closed issues and pull requests in the past 24 hours, 7 days, and overall. Not much here. it's intended more as a sample code.
+Run `ghquery` with the aforementionned parameters and it will spit out stats about open and closed issues and pull requests in the past 24 hours, 7 days, and overall. Not much here. it's intended more as a sample code.
 
 ## Features
 Current search criteria supported:
@@ -65,21 +65,21 @@ This repository is structure to be really easy to use with Visual Studio Code, s
 
 ## TODOs
 ### Housekeeping
-[ ] Issue type (issue or PR) and state (open/closed) are currently treated differently from other filtering mechanisms. unify this.
-[ ] Write tests
-[ ] Better docs
-[ ] Better decoupling of the parsing
-[ ] Better Github API file structure
-[ ] Find a way to not grow the call stack when looping between commands
-[ ] Turn all commands into promises?
-[ ] Custom issue interface from github json object (for type-safety and stuff)
+- [ ] Issue type (issue or PR) and state (open/closed) are currently treated differently from other filtering mechanisms. unify this.
+- [ ] Write tests
+- [ ] Better docs
+- [ ] Better decoupling of the parsing
+- [ ] Better Github API file structure
+- [ ] Find a way to not grow the call stack when looping between commands
+- [ ] Turn all commands into promises?
+- [ ] Custom issue interface from github json object (for type-safety and stuff)
 
 ### Features
-[ ] Save and load configuration from a file
-[ ] Save and load database to a file
-[ ] Differential queries to update the database
-[ ] Show and handle Github API calls rate limits
-[ ] Save query results to a file
-[ ] Add an option to specify a query directly from the command line
-[ ] Index the database
-[ ] Figure out a way to make multiple-word labels work (probably by dynamically creating a collection of labels from the Github JSON)
+- [ ] Save and load configuration from a file
+- [ ] Save and load database to a file
+- [ ] Differential queries to update the database
+- [ ] Show and handle Github API calls rate limits
+- [ ] Save query results to a file
+- [ ] Add an option to specify a query directly from the command line
+- [ ] Index the database
+- [ ] Figure out a way to make multiple-word labels work (probably by dynamically creating a collection of labels from the Github JSON)
