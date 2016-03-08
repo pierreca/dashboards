@@ -129,6 +129,6 @@ translate([5, 5, 10])
 */
 
 cutout(30, 1060);
-translate([1040, 220, 0])
+translate([1050, 220, 0])
     rotate([0, 0, 180])
-        cutout(20, 1040);
+        cutout(20, 1050);
