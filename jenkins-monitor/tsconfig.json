@@ -1,0 +1,13 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "outDir": "./lib",
+        "sourceMap": true,
+        "target": "es5",
+        "module": "commonjs"
+    },
+    "files": [
+        "./monitor.ts",
+        "./typings/tsd.d.ts"
+    ]
+}

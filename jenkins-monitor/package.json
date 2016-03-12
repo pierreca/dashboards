@@ -1,8 +1,8 @@
 {
-  "name": "pierreca-jenkins-api",
+  "name": "pierreca-jenkins-monitor",
   "version": "0.0.1",
-  "description": "Jenkins API and CLI",
-  "main": "lib/jenkins.js",
+  "description": "Jenkins Monitor using an LED strip to display status/progress",
+  "main": "lib/monitor.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,8 +12,7 @@
   },
   "keywords": [
     "jenkins",
-    "api",
-    "cli"
+    "dashboard"
   ],
   "author": "Pierre Cauchois",
   "license": "MIT",
@@ -26,9 +25,11 @@
     "chalk": "^1.1.1",
     "commander": "^2.9.0",
     "debug": "^2.2.0",
-    "lokijs": "^1.3.15"
+    "lokijs": "^1.3.15",
+    "pierreca-jenkins-api": "^0.0.1",
+    "lpd8806": "^0.2.0"
   },
   "bin": {
-    "jenkins": "lib/jenkins.js"
+    "jenkins-monitor": "/lib/monitor.js"
   }
 }

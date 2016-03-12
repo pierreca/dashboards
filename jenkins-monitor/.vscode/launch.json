@@ -2,10 +2,10 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "jenkins",
+			"name": "monitor",
 			"type": "node",
 			"request": "launch",
-			"program": "${workspaceRoot}/src/jenkins.ts",
+			"program": "${workspaceRoot}/monitor.ts",
 			"stopOnEntry": false,
 			"args": [],
 			"cwd": "${workspaceRoot}",
