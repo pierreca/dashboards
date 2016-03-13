@@ -12,12 +12,22 @@ export enum JobStatus {
 }
 
 export function fromJson(json: any) : Job {
-    return new Job(json.name, json.color, json.url);
+    var job = new Job(json.name, json.color, json.url);
+    job.builds = [];
+    json.builds.forEach(b => {
+        job.builds.push(build.fromJson(b));
+    });
+    
+    return job;
 }
 
 export function fromName(serverUrl: string, jobName: string) {
+    var jobUrl = serverUrl + '/job/' + jobName + '/api/json';
+    return fromUrl(jobUrl);
+}
+
+export function fromUrl(jobUrl: string) {
     return new Promise(function (resolve, reject) {
-        var jobUrl = serverUrl + 'job/' + jobName + '/api/json';
         http.get(jobUrl, res => {
             debug('getJob status code: ' + res.statusCode);
             var responseBody = '';
@@ -35,31 +45,35 @@ export function fromName(serverUrl: string, jobName: string) {
 }
 
 export class Job {
+    builds: Array<build.Build>;
     public constructor(public name: string, public status: JobStatus, private rootUrl: string) {
     }
     
-    public listBuilds(): Promise<Array<build.Build>> {
+    public refreshBuilds(): Promise<Array<build.Build>> {
         var self = this;
+        return new Promise(function (resolve, reject) {
+            fromUrl(self.rootUrl).then(job => {
+                self.builds = job.builds;
+                return self.builds
+            }).then(resolve);
+        });
+    }
+    
+    
+    public getBuildResults(refreshBuildList?: boolean): Promise<Array<build.Build>> {
+        var self = this;
+        var getBuildsResult = Promise.map(this.builds, b => {
+            return b.getResult();
+        });
+        
         return new Promise(function (resolve, reject){
-            var buildListUrl = self.rootUrl + '/api/json';
-            http.get(buildListUrl, (res) => {
-                debug('listJobs status code: ' + res.statusCode);
-                var responseBody = '';
-                var jobs = new Array<build.Build>();
-                res.on('data', chunk => {
-                    responseBody += chunk; 
-                });
-                
-                res.on('end', () => {
-                    var json = JSON.parse(responseBody);
-                    Promise.map(json.builds, jsonBuild => {
-                        var b = build.fromJson(jsonBuild);
-                        return b.getResult();
-                    }).then(resolve);
-                });
-            }).on('error', err => {
-                reject(err);
-            });
+            if (refreshBuildList){
+                this.refreshBuilds()
+                    .then(getBuildsResult)
+                    .then(resolve)
+            } else {
+                getBuildsResult.then(resolve);
+            }
         });
     };
 }

@@ -12,6 +12,7 @@
         "./src/job.ts",
         "./src/build.ts",
         "./src/buildresult.ts",
+        "./src/index.ts",
         "./typings/tsd.d.ts"
     ]
 }

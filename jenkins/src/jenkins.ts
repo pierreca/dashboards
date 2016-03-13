@@ -23,7 +23,7 @@ var jenkinsUrl = commander.args[0];
 
 var db = new loki('jenkinsDB.json'); 
 var jenkins = new server.Server(jenkinsUrl);
-jenkins.listJobs().then(jobs => Promise.map(jobs, job => job.listBuilds().then(builds => {
+jenkins.listJobs().then(jobs => Promise.map(jobs, job => job.getBuildResults().then(builds => {
             var jobCollection = db.addCollection(job.name);
             builds.forEach(build => jobCollection.insert(build));
         }))).then(function() {
