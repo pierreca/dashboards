@@ -9,18 +9,19 @@ export class Blinker {
         this.direction = 1;
         this.increment = 1;
         this.currentIntensity = 0;
+        this.interval = null;
     }
     
     public start(led : number) {
         this.led = led;
-        
+        var self = this;
         this.interval = setInterval(function () {
-            this.currentIntensity += this.increment * this.direction;
-            if (this.currentIntensity >= 255) this.direction = -1;
-            else if (this.currentIntensity <= 0) this.direction = +1;
+            self.currentIntensity += self.increment * self.direction;
+            if (self.currentIntensity >= 255) self.direction = -1;
+            else if (self.currentIntensity <= 0) self.direction = +1;
             
-            this.ledStrip.setPixelRGB(this.led, 0, 0, this.currentIntensity);
-            this.ledStrip.update();
+            self.ledStrip.setPixelRGB(self.led, 0, 0, self.currentIntensity);
+            self.ledStrip.update();
         }, 1);
     }
     

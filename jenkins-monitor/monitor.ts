@@ -37,8 +37,11 @@ setInterval(function () {
         
         for (var i = 0; i < builds.length; i++) {
             if (builds[i].building) {
+                debug('Build #' + builds[i].number + ' is in progress');
                 if (!blinker.isBlinking()) {
-                    blinker.start(builds.length - 1 - i);
+                    var ledNumber = builds.length - 1 - i;
+                    debug('Starting blinker for build #' + builds[i].number + ' on LED #' + ledNumber);
+                    blinker.start(ledNumber);
                 }
             } else {
                 var color = [0, 0, 0];
