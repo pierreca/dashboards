@@ -1,6 +1,6 @@
 {
   "name": "pierreca-jenkins-api",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Jenkins API and CLI",
   "main": "lib/index.js",
   "scripts": {

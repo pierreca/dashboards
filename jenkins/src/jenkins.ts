@@ -5,7 +5,6 @@ var chalk = require('chalk');
 var commander = require('commander');
 var packageJson = require('../package.json');
 
-import build = require('./build');
 import job = require('./job');
 import server = require('./server');
 
@@ -23,9 +22,11 @@ var jenkinsUrl = commander.args[0];
 
 var db = new loki('jenkinsDB.json'); 
 var jenkins = new server.Server(jenkinsUrl);
-jenkins.listJobs().then(jobs => Promise.map(jobs, job => job.getBuildResults().then(builds => {
+jenkins.listJobs().then(jobs => Promise.map(jobs, job => job.getBuildResults().then(buildResults => {
             var jobCollection = db.addCollection(job.name);
-            builds.forEach(build => jobCollection.insert(build));
+            buildResults.forEach(buildResult => jobCollection.insert(buildResult));
+        }).catch(err => {
+            console.log(chalk.bold(chalk.red(err.message)));
         }))).then(function() {
             var cols = db.listCollections();
             cols.forEach(colDescription => {

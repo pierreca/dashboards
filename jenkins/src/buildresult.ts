@@ -12,7 +12,7 @@ export function fromJson(obj: any) : BuildResult {
     result.buildHost = obj.builtOn;
     result.duration = obj.duration;
     result.name = obj.fullDisplayName;
-    result.number = obj.id
+    result.number = obj.number
     result.result = obj.result;
     result.timestamp = new Date(obj.timestamp);
     return result;
@@ -25,4 +25,5 @@ export class BuildResult {
     name: string;
     number: number;
     buildHost: string;
+    url: string;
 };

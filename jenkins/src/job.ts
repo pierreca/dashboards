@@ -2,22 +2,37 @@ var http = require('http');
 var debug = require('debug')('jenkins:job');
 var Promise = require('bluebird');
 
-import build = require('./build');
+import buildresult = require('./buildresult');
 
 export enum JobStatus {
-    disabled,
-    notbuilt,
-    blue,
-    red
+    Disabled,
+    NotBuilt,
+    Success,
+    Failure,
+    Unknown
 }
 
 export function fromJson(json: any) : Job {
-    var job = new Job(json.name, json.color, json.url);
-    job.builds = [];
-    json.builds.forEach(b => {
-        job.builds.push(build.fromJson(b));
-    });
+    var status = JobStatus.Unknown;
+    switch (json.color) {
+        case "disabled":
+            status = JobStatus.Disabled;
+            break;
+        case "notbuilt":
+            status = JobStatus.NotBuilt;
+            break;
+        case "blue":
+            status = JobStatus.Success;
+            break;
+        case "red":
+            status = JobStatus.Failure;
+            break;
+        default:
+            status = JobStatus.Unknown;
+            break;
+    }
     
+    var job = new Job(json.name, status, json.url);
     return job;
 }
 
@@ -45,34 +60,44 @@ export function fromUrl(jobUrl: string) {
 }
 
 export class Job {
-    builds: Array<build.Build>;
+    buildResults: Array<buildresult.BuildResult>;
     public constructor(public name: string, public status: JobStatus, private rootUrl: string) {
     }
     
-    public refreshBuilds(): Promise<Array<build.Build>> {
+    public getBuildResults(): Promise<Array<buildresult.BuildResult>> {
         var self = this;
-        return new Promise(function (resolve, reject) {
-            fromUrl(self.rootUrl).then(job => {
-                self.builds = job.builds;
-                return self.builds
-            }).then(resolve);
-        });
-    }
-    
-    
-    public getBuildResults(refreshBuildList?: boolean): Promise<Array<build.Build>> {
-        var self = this;
-        var getBuildsResult = Promise.map(this.builds, b => {
-            return b.getResult();
-        });
-        
         return new Promise(function (resolve, reject){
-            if (refreshBuildList){
-                this.refreshBuilds()
-                    .then(getBuildsResult)
-                    .then(resolve)
+            if (self.status === JobStatus.NotBuilt || self.status === JobStatus.Disabled || self.status === JobStatus.Unknown) {
+                reject(new Error('Job \'' + self.name + '\' status is ' + JobStatus[self.status]));
             } else {
-                getBuildsResult.then(resolve);
+                var buildResultsUrl = self.rootUrl + 'api/json?tree=builds[number,result,url,fullDisplayName,timestamp,estimatedDuration,duration,builtOn]';
+                http.get(buildResultsUrl, res => {
+                    debug('getBuildResults for \'' + self.name + '\' status code: ' + res.statusCode);
+                    if (res.statusCode !== 200) {
+                        reject(new Error('Could not get build results'));
+                    } else {
+                        var responseBody = '';
+                        res.on('data', chunk => {
+                            responseBody += chunk; 
+                        });
+                        
+                        res.on('end', () => {
+                            try {
+                                var json = JSON.parse(responseBody);
+                                Promise.map(json.builds, jsonResult => {
+                                    self.buildResults = [];
+                                    var b = buildresult.fromJson(jsonResult);
+                                    self.buildResults.push(b);
+                                    return b;
+                                }).then(resolve);
+                            } catch (err) {
+                                var error = new Error('Could not parse JSON for ' + self.name + ': ' + err.message);
+                                error.stack = err.stack;
+                                reject(error);
+                            }
+                        });
+                    }  
+                });
             }
         });
     };
