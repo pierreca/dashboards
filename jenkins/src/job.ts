@@ -67,10 +67,10 @@ export class Job {
     public getBuildResults(): Promise<Array<buildresult.BuildResult>> {
         var self = this;
         return new Promise(function (resolve, reject){
-            if (self.status === JobStatus.NotBuilt || self.status === JobStatus.Disabled || self.status === JobStatus.Unknown) {
+            if (self.status === JobStatus.NotBuilt || self.status === JobStatus.Disabled) {
                 reject(new Error('Job \'' + self.name + '\' status is ' + JobStatus[self.status]));
             } else {
-                var buildResultsUrl = self.rootUrl + 'api/json?tree=builds[number,result,url,fullDisplayName,timestamp,estimatedDuration,duration,builtOn]';
+                var buildResultsUrl = self.rootUrl + 'api/json?tree=builds[number,result,url,fullDisplayName,timestamp,estimatedDuration,duration,builtOn,building]';
                 http.get(buildResultsUrl, res => {
                     debug('getBuildResults for \'' + self.name + '\' status code: ' + res.statusCode);
                     if (res.statusCode !== 200) {

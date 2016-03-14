@@ -15,6 +15,7 @@ export function fromJson(obj: any) : BuildResult {
     result.number = obj.number
     result.result = obj.result;
     result.timestamp = new Date(obj.timestamp);
+    result.building = obj.building;
     return result;
 }
 
@@ -26,4 +27,5 @@ export class BuildResult {
     number: number;
     buildHost: string;
     url: string;
+    building: boolean;
 };

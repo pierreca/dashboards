@@ -35,7 +35,9 @@ jenkins.listJobs().then(jobs => Promise.map(jobs, job => job.getBuildResults().t
                 var successfulBuilds = collection.find({result: 'SUCCESS'});
                 var failedBuilds = collection.find({result: 'FAILURE'});
                 var abortedBuilds = collection.find({result: 'ABORTED'});
+                var buildingNow = collection.find({building: true});
                 
+                console.log('\tBuilding now: ' + chalk.bold(buildingNow.length));
                 console.log('\tSuccessful builds: ' + chalk.green(successfulBuilds.length));
                 console.log('\tFailed builds: ' + chalk.red(failedBuilds.length));
                 console.log('\tAborted builds: ' + chalk.grey(abortedBuilds.length));

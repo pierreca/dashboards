@@ -36,32 +36,33 @@ setInterval(function () {
         }
         
         for (var i = 0; i < builds.length; i++) {
-            var color = [0, 0, 0];
-            switch(builds[i].result) {
-                case 'SUCCESS': 
-                    if (buildBlinking === builds[i].number) {
-                        blinker.stop();
-                    }
-                    color = [0, 255, 0];
-                    ledStrip.setPixelRGB(builds.length - 1 - i, color[0], color[1], color[2]);
-                    break;
-                case 'FAILURE':
-                    if (buildBlinking === builds[i].number) {
-                        blinker.stop();
-                    }
-                    color = [255, 0, 0];
-                    ledStrip.setPixelRGB(builds.length - 1 - i, color[0], color[1], color[2]);
-                    break;
-                case null:
-                    if (!blinker.isBlinking()) {
-                        blinker.start(builds.length - 1 - i);
-                    }
-                    break;
-                default:
-                    color = [0, 0, 0];
-                    break;
+            if (builds[i].building) {
+                if (!blinker.isBlinking()) {
+                    blinker.start(builds.length - 1 - i);
+                }
+            } else {
+                var color = [0, 0, 0];
+                switch(builds[i].result) {
+                    case 'SUCCESS': 
+                        if (buildBlinking === builds[i].number) {
+                            blinker.stop();
+                        }
+                        color = [0, 255, 0];
+                        ledStrip.setPixelRGB(builds.length - 1 - i, color[0], color[1], color[2]);
+                        break;
+                    case 'FAILURE':
+                        if (buildBlinking === builds[i].number) {
+                            blinker.stop();
+                        }
+                        color = [255, 0, 0];
+                        ledStrip.setPixelRGB(builds.length - 1 - i, color[0], color[1], color[2]);
+                        break;
+                    default:
+                        color = [0, 0, 0];
+                        break;
+                }
+                debug('Build #' + builds[i].number + ': ' + builds[i].result + ' => LED: ' + (builds.length - 1 - i) + ' [R: ' + color[0] + ' G: ' + color[1] + ' B: ' + color[2] + ']')
             }
-            debug('Build #' + builds[i].number + ': ' + builds[i].result + ' => LED: ' + (builds.length - 1 - i) + ' [R: ' + color[0] + ' G: ' + color[1] + ' B: ' + color[2] + ']')
         };
         
         ledStrip.update();
