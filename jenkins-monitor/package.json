@@ -23,7 +23,7 @@
   "dependencies": {
     "commander": "^2.9.0",
     "debug": "^2.2.0",
-    "pierreca-jenkins-api": "^0.0.4"
+    "pierreca-jenkins-api": "^0.0.5"
   },
   "bin": {
     "jenkins-monitor": "/lib/monitor.js"

@@ -51,9 +51,15 @@ export function fromUrl(jobUrl: string) {
             });
             
             res.on('end', () => {
-                var json = JSON.parse(responseBody);
-                var job = fromJson(json);
-                resolve(job);
+                try {
+                    var json = JSON.parse(responseBody);
+                    var job = fromJson(json);
+                    resolve(job);
+                } catch (err) {
+                    var error = new Error('Could not parse job JSON description: ' + err.message);
+                    error.stack = err.stack;
+                    reject(error);
+                }
             });    
         });
     });

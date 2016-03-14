@@ -39,8 +39,9 @@ setInterval(function () {
             if (builds[i].building) {
                 debug('Build #' + builds[i].number + ' is in progress');
                 if (!blinker.isBlinking()) {
+                    buildBlinking = builds[i].number;
                     var ledNumber = builds.length - 1 - i;
-                    debug('Starting blinker for build #' + builds[i].number + ' on LED #' + ledNumber);
+                    debug('Starting blinker for build #' + buildBlinking + ' on LED #' + ledNumber);
                     blinker.start(ledNumber);
                 }
             } else {
@@ -49,6 +50,7 @@ setInterval(function () {
                     case 'SUCCESS': 
                         if (buildBlinking === builds[i].number) {
                             blinker.stop();
+                            buildBlinking = -1;
                         }
                         color = [0, 255, 0];
                         ledStrip.setPixelRGB(builds.length - 1 - i, color[0], color[1], color[2]);
@@ -56,6 +58,7 @@ setInterval(function () {
                     case 'FAILURE':
                         if (buildBlinking === builds[i].number) {
                             blinker.stop();
+                            buildBlinking = -1;
                         }
                         color = [255, 0, 0];
                         ledStrip.setPixelRGB(builds.length - 1 - i, color[0], color[1], color[2]);
