@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-'user strict';
 
 var pr = require('prompt');
 var commander = require('commander');

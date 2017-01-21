@@ -28,13 +28,15 @@
     "commander": "^2.9.0",
     "debug": "^2.2.0",
     "lokijs": "^1.3.15",
-    "prompt": "^1.0.0"
+    "prompt": "^1.0.0",
+    "typescript": "^2.1.5"
   },
   "devDependencies": {
-    "tslint": "^3.5.0"
+    "tslint": "^4.3.1"
   },
   "bin": {
     "ghquery": "lib/ghquery.js",
-    "ghprompt": "lib/ghprompt.js"
+    "ghprompt": "lib/ghprompt.js",
+    "shiproom_report": "lib/shiproom_report.js"
   }
 }
