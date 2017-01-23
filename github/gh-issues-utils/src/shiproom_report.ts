@@ -5,8 +5,15 @@ var commander = require('commander');
 var chalk = require('chalk');
 var packageJson = require('../package.json');
 
-import GithubApi = require('./github_api');
-import types = require('./github_types');
+import Promise = require('bluebird');
+
+import {
+    GHRepository,
+    IssueType,
+    IssueState,
+    IssueLabelFilter,
+    FilterCollection
+    } from 'gh-issues-api';
 
 commander.version(packageJson.version)
          .usage('[options] [file-name]')
@@ -44,11 +51,11 @@ var csvLines = [];
 csvLines.push('repo name,' + labels.join(',') + ',total')
 
 var promises = repositories.map(repoName => {
-  var repo:GithubApi.GHRepository;
+  var repo:GHRepository;
   if (user && token) {
-      repo = new GithubApi.GHRepository(owner, repoName, user, token);
+      repo = new GHRepository(owner, repoName, user, token);
   } else {
-      repo = new GithubApi.GHRepository(owner, repoName);
+      repo = new GHRepository(owner, repoName);
   }
 
   var report = {
@@ -58,11 +65,11 @@ var promises = repositories.map(repoName => {
   return repo.loadAllIssues()
       .then(() => {
         var promises = labels.map(label => {
-          var filterCollection = new types.FilterCollection();
-          filterCollection.label = new types.IssueLabelFilter(label);
+          var filterCollection = new FilterCollection();
+          filterCollection.label = new IssueLabelFilter(label);
           return Promise.all([
-            repo.list(types.IssueType.All, types.IssueState.Open, filterCollection).then(issues => report[label] = issues.length),
-            repo.list(types.IssueType.All, types.IssueState.Open).then(issues => report['total'] = issues.length)
+            repo.list(IssueType.All, IssueState.Open, filterCollection).then(issues => report[label] = issues.length),
+            repo.list(IssueType.All, IssueState.Open).then(issues => report['total'] = issues.length)
           ]);
         });
 

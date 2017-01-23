@@ -1,8 +1,8 @@
-var Https = require('https');
-var Promise = require('bluebird');
-var debug = require('debug')('github_api');
-var url = require('url');
-var loki = require('lokijs');
+const Https = require('https');
+const url = require('url');
+import Promise = require('bluebird');
+const debug = require('debug')('github_api');
+import loki = require('lokijs');
 
 import types = require('./github_types');
 
@@ -15,7 +15,7 @@ export class GHRepository {
     
     public get(ids : Array<number>) : Promise<Array<any>> {
         var self = this;
-        return new Promise(function(resolve, reject) {
+        return new Promise<Array<any>>(function(resolve, reject) {
             var results = [];            
             for (var i = 0; i < ids.length; i++) {
                 var issue = self.issues.findOne({ number: ids[i]});
@@ -33,9 +33,9 @@ export class GHRepository {
         });
     }
     
-    public loadAllIssues() : Promise<Array<any>>{
+    public loadAllIssues() : Promise<Array<any>> {
         var self = this;
-        return new Promise(function (resolve, reject) {
+        return new Promise<Array<any>>(function (resolve, reject) {
             var options:any = {
                 host: 'api.github.com',
                 path: '/repos/' + self.owner + '/' + self.name + '/issues?per_page=100&state=all',

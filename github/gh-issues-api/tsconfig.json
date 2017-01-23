@@ -7,11 +7,9 @@
         "module": "commonjs"
     },
     "files": [
-        "./src/ghprompt.ts",
-        "./src/ghquery.ts",
         "./src/github_types.ts",
         "./src/github_api.ts",
-        "./src/shiproom_report.ts",
-        "./typings/tsd.d.ts"
+        "./src/index.ts",
+        "./typings/index.d.ts"
     ]
 }

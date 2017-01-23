@@ -1,7 +1,12 @@
 {
-  "name": "gh-issues-cli",
-  "version": "0.0.2",
-  "description": "Github repository command-line interface",
+  "name": "gh-issues-api",
+  "version": "0.0.1",
+  "description": "Github issues API wrapper written in typescript",
+  "main": "lib/index.js",
+  "typings": "src/index",
+  "files": [
+    "/lib"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,20 +28,12 @@
   },
   "homepage": "https://github.com/pierreca/dashboards#readme",
   "dependencies": {
-    "bluebird": "^3.3.3",
-    "chalk": "^1.1.1",
-    "commander": "^2.9.0",
-    "debug": "^2.2.0",
-    "lokijs": "^1.3.15",
-    "prompt": "^1.0.0",
-    "typescript": "^2.1.5"
+    "bluebird": "^3.4.7",
+    "debug": "^2.6.0",
+    "lokijs": "^1.4.2"
   },
   "devDependencies": {
-    "tslint": "^4.3.1"
-  },
-  "bin": {
-    "ghquery": "lib/ghquery.js",
-    "ghprompt": "lib/ghprompt.js",
-    "shiproom_report": "lib/shiproom_report.js"
+    "tslint": "^4.3.1",
+    "typescript": "^2.1.5"
   }
 }

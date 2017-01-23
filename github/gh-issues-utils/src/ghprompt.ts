@@ -2,11 +2,21 @@
 
 var pr = require('prompt');
 var commander = require('commander');
-var packageJson = require('../package.json');
 var chalk = require('chalk');
 
-import GithubApi = require('./github_api');
-import types = require('./github_types');
+var packageJson = require('../package.json');
+
+import {
+    GHRepository,
+    IssueFilter,
+    IssueType,
+    IssueState,
+    IssueActivity,
+    IssueActivityFilter,
+    IssueLabelFilter,
+    IssueAssigneeFilter,
+    FilterCollection
+    } from 'gh-issues-api';
 
 commander.version(packageJson.version)
     .usage('[options] <OWNER> <REPOSITORY>')
@@ -22,12 +32,12 @@ var owner = commander.args[0];
 var repository = commander.args[1];
 var user = commander.user;
 var token = commander.password;
-var repo:GithubApi.GHRepository;
+var repo:GHRepository;
 
 if (user && token) {
-    repo = new GithubApi.GHRepository(owner, repository, user, token);
+    repo = new GHRepository(owner, repository, user, token);
 } else {
-    repo = new GithubApi.GHRepository(owner, repository);
+    repo = new GHRepository(owner, repository);
 }
 
 var startPrompt = function() {
@@ -116,12 +126,12 @@ var linkcmd = function (issueNumbers) {
 }
 
 var translateParams = function (params: Array<string>) {
-    var filterCollection: types.FilterCollection;
-    var issueType: types.IssueType = types.IssueType.All;
-    var issueState: types.IssueState = types.IssueState.All;
-    var issueActivity: types.IssueActivity = types.IssueActivity.Updated;
+    var filterCollection: FilterCollection;
+    var issueType: IssueType = IssueType.All;
+    var issueState: IssueState = IssueState.All;
+    var issueActivity: IssueActivity = IssueActivity.Updated;
     var negated = false;
-    var verifyNegation = function (filter: types.IssueFilter) {
+    var verifyNegation = function (filter: IssueFilter) {
         if (negated) {
             filter.negated = true;
         }
@@ -152,45 +162,45 @@ var translateParams = function (params: Array<string>) {
     while(params.length > 0) {
         switch(params[0]) {
             case 'open':
-                issueState = types.IssueState.Open;
+                issueState = IssueState.Open;
                 break;
             case 'close':
             case 'closed':
-                if (issueState === types.IssueState.All) {
-                    issueState = types.IssueState.Closed;
+                if (issueState === IssueState.All) {
+                    issueState = IssueState.Closed;
                 }
                 
-                if (issueActivity === types.IssueActivity.Updated) {
-                    issueActivity = types.IssueActivity.Closed;
+                if (issueActivity === IssueActivity.Updated) {
+                    issueActivity = IssueActivity.Closed;
                 }
                 
                 break;
             case 'issues': 
-                issueType = types.IssueType.Issue;
+                issueType = IssueType.Issue;
                 break;
             case 'pull':
             case 'prs': 
-                issueType = types.IssueType.PullRequest;
+                issueType = IssueType.PullRequest;
                 break;
             case 'opened':
             case 'openned':
             case 'created':
-                issueActivity = types.IssueActivity.Created;
+                issueActivity = IssueActivity.Created;
                 break;
             case 'assign':
             case 'assigned':
                 if (!filterCollection) {
-                    filterCollection = new types.FilterCollection();
+                    filterCollection = new FilterCollection();
                 }
                 
                 if (params[1] === 'to') {
                     if (params[2] === 'me') {
                         params[2] = commander.user;
                     }
-                    filterCollection.assignee = new types.IssueAssigneeFilter(params[2]);
+                    filterCollection.assignee = new IssueAssigneeFilter(params[2]);
                     params.splice(1, 2);
                 } else {
-                    filterCollection.assignee = new types.IssueAssigneeFilter(null);
+                    filterCollection.assignee = new IssueAssigneeFilter(null);
                     params.splice(1, 1);
                 }
                 verifyNegation(filterCollection.assignee);
@@ -200,9 +210,9 @@ var translateParams = function (params: Array<string>) {
             case 'labeled':
             case 'labelled':
                 if (!filterCollection) {
-                    filterCollection = new types.FilterCollection();
+                    filterCollection = new FilterCollection();
                 }
-                filterCollection.label = new types.IssueLabelFilter(params[1]);
+                filterCollection.label = new IssueLabelFilter(params[1]);
                 verifyNegation(filterCollection.label);    
                 
                 params.splice(1, 1);
@@ -234,9 +244,9 @@ var translateParams = function (params: Array<string>) {
                 }
                 
                 var relevantTimeStamp = new Date(Date.now() - (multiplier * durationUnit));
-                var activityFilter = new types.IssueActivityFilter(issueActivity, relevantTimeStamp);
+                var activityFilter = new IssueActivityFilter(issueActivity, relevantTimeStamp);
                 if(!filterCollection) {
-                    filterCollection = new types.FilterCollection();
+                    filterCollection = new FilterCollection();
                 }
                 
                 filterCollection.activity = activityFilter

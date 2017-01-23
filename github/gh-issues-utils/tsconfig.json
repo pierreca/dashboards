@@ -1,0 +1,15 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "outDir": "./lib",
+        "sourceMap": true,
+        "target": "es5",
+        "module": "commonjs"
+    },
+    "files": [
+        "./src/ghprompt.ts",
+        "./src/ghquery.ts",
+        "./src/shiproom_report.ts",
+        "./typings/index.d.ts"
+    ]
+}
