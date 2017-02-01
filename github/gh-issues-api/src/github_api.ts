@@ -12,11 +12,11 @@ export class GHRepository {
         var repoDB = new loki('issues.json');
         this.issues = repoDB.addCollection('issues');
     }
-    
+
     public get(ids : Array<number>) : Promise<Array<any>> {
         var self = this;
         return new Promise<Array<any>>(function(resolve, reject) {
-            var results = [];            
+            var results = [];
             for (var i = 0; i < ids.length; i++) {
                 var issue = self.issues.findOne({ number: ids[i]});
                 if (issue) {
@@ -32,7 +32,7 @@ export class GHRepository {
             }
         });
     }
-    
+
     public loadAllIssues() : Promise<Array<any>> {
         var self = this;
         return new Promise<Array<any>>(function (resolve, reject) {
@@ -44,11 +44,11 @@ export class GHRepository {
                     'user-agent' : 'node'
                 }
             };
-            
-            if(self.user && self.token) {
+
+            if (self.user && self.token) {
                 options.auth = self.user + ':' + self.token;
             }
-            
+
             var processResponse = function (response: any, resolve?: Function) {
                 var responseBody = '';
                 response.on('data', function (chunk) {
@@ -59,13 +59,13 @@ export class GHRepository {
                     json.forEach((issue) => {
                         self.issues.insert(issue);
                     });
-                    
+
                     if (!!resolve) {
                         resolve(self.issues);
                     }
                 });
-            }
-            
+            };
+
             var sendRequest = function(options, lastPagePath?: string) {
                 var req = Https.request(options, (res) => {
                     debug('GET All Issues: ', res.statusCode + ': ' + res.statusMessage);
@@ -87,54 +87,53 @@ export class GHRepository {
                             debug('downloading next page: ' + nextPageLink);
                             var properties = url.parse(nextPageLink, true);
                             options.path = properties.pathname + properties.search;
-                            
+
                             sendRequest(options, lastPagePath);
                         }
                     }
                 }); 
                 req.end();
             };
-            
+
             sendRequest(options);
         });
     };
-    
-    
+
     public list(type: types.IssueType, state: types.IssueState, filters?: types.FilterCollection) : Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
             var query = undefined;
             var queries = [];
-            
+
             if (state !== types.IssueState.All) {
-                queries.push((state === types.IssueState.Open) ? { state : 'open' } : { state: 'closed' });    
+                queries.push((state === types.IssueState.Open) ? { state : 'open' } : { state: 'closed' });
             }
-            
+
             if(type !== types.IssueType.All) {
                 queries.push((type === types.IssueType.Issue) ? { pull_request : undefined } : { pull_request: { '$ne': undefined } });
             }
-            
+
             if(queries.length === 1) {
                 query = queries[0];
             } else if (queries.length > 1) {
                 query = { '$and' : queries }
             }
-            
+
             var results;
-            if(filters) {
+            if (filters) {
                 results = self.issues.chain().find(query).where(issue => {
                     var result = undefined;
-                    
+
                     if (filters.activity) result = filters.activity.apply(issue);
                     if (filters.label) result = result === undefined ? filters.label.apply(issue) : result && filters.label.apply(issue);
                     if (filters.assignee) result = result === undefined ? filters.assignee.apply(issue) : result && filters.assignee.apply(issue);
-                    
+
                     return result;
                 }).data();
             } else {
                 results = self.issues.find(query);
             }
-            
+
             resolve(results);
         });
     };

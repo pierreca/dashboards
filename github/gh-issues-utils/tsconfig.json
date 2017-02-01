@@ -10,6 +10,7 @@
         "./src/ghprompt.ts",
         "./src/ghquery.ts",
         "./src/shiproom_report.ts",
+        "./src/stale_issues.ts",
         "./typings/index.d.ts"
     ]
 }

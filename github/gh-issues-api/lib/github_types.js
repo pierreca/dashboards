@@ -30,10 +30,10 @@ var IssueActivityFilter = (function () {
                     ts = new Date(issue.created_at);
                     break;
                 case IssueActivity.Updated:
-                    ts = new Date(issue.created_at);
+                    ts = new Date(issue.updated_at);
                     break;
                 case IssueActivity.Closed:
-                    ts = new Date(issue.created_at);
+                    ts = new Date(issue.closed_at);
                     break;
             }
             var result = ts >= _this.timestamp;
