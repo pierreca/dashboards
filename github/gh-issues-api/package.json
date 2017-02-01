@@ -1,6 +1,6 @@
 {
   "name": "gh-issues-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Github issues API wrapper written in typescript",
   "main": "lib/index.js",
   "typings": "src/index",
